@@ -40,19 +40,19 @@ contract BOBMinter is Ownable, IERC721Receiver{
     
     uint internal _CurrentRoundPrice = 0.00069 ether; // btc
     
-    uint internal _MintsPerRound = 500;
+    uint internal _MintsPerRound = 500; // each round has this no of mints before next round is initiated
     
     uint16 internal _CurrentRound = 1;
 
-    uint16 internal _roundMultiplier = 20;
+    uint16 internal _roundMultiplier = 69; // each round increase lead to 6.9 % price hike
 
-    uint8 internal _ReferalBonus = 25; // 25%
+    uint8 internal _ReferalBonus = 25; // 25% of referal bonus and 5% mint discount on mint from referal
     
-    uint public  currentRoundMints ;
+    uint public  currentRoundMints ; 
     
     bool public mintStarted = false;
 
-    BOOBSOFBITCOIN internal NFTContract; 
+    BOOBSOFBITCOIN internal NFTContract; // if you want to change to your own contract replace this with own
     
     event NFTRecieved(address operator , address from , uint256 tokenId , uint256 timeStamp, bytes data);
 
@@ -65,7 +65,7 @@ contract BOBMinter is Ownable, IERC721Receiver{
     { 
        NFTContract = new BOOBSOFBITCOIN(address(this));
     }
-
+    // return nft contract minted on deployement of minter
     function nftContractAddress() public view returns (address _contract){
         _contract = address(NFTContract);
     }
@@ -85,7 +85,7 @@ contract BOBMinter is Ownable, IERC721Receiver{
     }
 
     function getNextRoundPrice() public view returns (uint){
-        return  (_CurrentRoundPrice + ((_CurrentRoundPrice * _roundMultiplier)/100));
+        return  (_CurrentRoundPrice + ((_CurrentRoundPrice * _roundMultiplier)/1000));
     }
 
     function supplyLeft() public view returns(uint){
@@ -129,7 +129,7 @@ contract BOBMinter is Ownable, IERC721Receiver{
             return true;
         } else {return false;}
     }
-
+    // enter address(0) in case of non refered
     function mint(address referal) public payable {
         uint amount = getCurrentPrice(referal);
         require( users[msg.sender].mintCount < _MaxMintPerWallet,"mint limit reached"); 
