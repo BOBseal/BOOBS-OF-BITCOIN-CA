@@ -48,7 +48,7 @@ contract BOBMinter is Ownable, IERC721Receiver{
 
     uint8 internal _ReferalBonus = 25; // 25%
     
-    uint public  currentRoundMints = 499;
+    uint public  currentRoundMints ;
     
     bool public mintStarted = false;
 
