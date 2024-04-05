@@ -442,6 +442,43 @@
 				"type": "function"
 			},
 			{
+				"inputs": [],
+				"name": "buyEnabled",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "shares_",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "reciever",
+						"type": "uint256"
+					}
+				],
+				"name": "buyShare",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "uint256",
@@ -641,30 +678,6 @@
 					}
 				],
 				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "shares_",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "reciever",
-						"type": "uint256"
-					}
-				],
-				"name": "mintShare",
-				"outputs": [
-					{
-						"internalType": "bool",
-						"name": "",
-						"type": "bool"
-					}
-				],
-				"stateMutability": "payable",
 				"type": "function"
 			},
 			{
@@ -950,6 +963,24 @@
 				"inputs": [
 					{
 						"internalType": "address",
+						"name": "a",
+						"type": "address"
+					},
+					{
+						"internalType": "bool",
+						"name": "b",
+						"type": "bool"
+					}
+				],
+				"name": "setAllowed",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
 						"name": "operator",
 						"type": "address"
 					},
@@ -991,6 +1022,19 @@
 					}
 				],
 				"name": "setRoyalty",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bool",
+						"name": "status",
+						"type": "bool"
+					}
+				],
+				"name": "setShareActivity",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -1367,7 +1411,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"BOB_ERC4626_FORK/BOB-NFT.sol": "BOOBSOFBITCOIN"
+			"BOB_ERC4626_FORK_v2/BOB-NFT.sol": "BOOBSOFBITCOIN"
 		},
 		"evmVersion": "shanghai",
 		"libraries": {},
@@ -1533,12 +1577,12 @@
 				"dweb:/ipfs/QmVBEei6aTnvYNZp2CHYVNKyZS4q1KkjANfY39WVXZXVoT"
 			]
 		},
-		"BOB_ERC4626_FORK/BOB-NFT.sol": {
-			"keccak256": "0x5d3d9112657009b9ce02a950a8493a4ae07d6fea7035c28ecf6c75839d245be5",
+		"BOB_ERC4626_FORK_v2/BOB-NFT.sol": {
+			"keccak256": "0xe39052c9d22d306f25972f6646298260b82dca1b91a26f3d2d4c00dff4dec8e8",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://72e76ea34258dd4416f21542eb05d1b3cf646c87d4921e3e2e90f71d28f4b650",
-				"dweb:/ipfs/QmdifdMkEUEhbbwV4TQ1KiKUFiaJ6ggLL59g1xSinVUCrg"
+				"bzz-raw://401c039059c540fd60bd1cb35401a79e80894054dcaa84f14d8072160156c23e",
+				"dweb:/ipfs/Qme4PRErsRETucUvpiShMj5zaxyKGHzdHuAB8UHtEWgcjR"
 			]
 		}
 	},

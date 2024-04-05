@@ -44,7 +44,7 @@ contract BOBMinter is Ownable, IERC721Receiver{
     
     uint16 internal _CurrentRound = 1;
 
-    uint16 internal _roundMultiplier = 69; // each round increase lead to 6.9 % price hike
+    uint16 internal _roundMultiplier = 200; // each round increase lead to 20 % price hike
 
     uint8 internal _ReferalBonus = 15; // 5% of referal bonus and 5% mint discount on mint from referal
     

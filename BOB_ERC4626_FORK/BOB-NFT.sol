@@ -16,10 +16,10 @@ import {ERC2981} from "@openzeppelin/contracts/token/common/ERC2981.sol";
 contract BOOBSOFBITCOIN is ERC721, ERC721URIStorage, Ownable, ERC2981{
     using Math for uint;
     uint public totalSupply = 10000;
-    uint public  maxDepositInOneTx = 0.1 ether; // 0.1 btc per deposit tx , to stop from one attacker gaining all shares
-    
+    uint public  maxDepositInOneTx = 0.05 ether; // 0.05 btc per deposit tx , to stop from one attacker gaining all shares
+    bool public buyEnabled; // if share activity is allowed 
     uint internal _totalShares;
-    uint internal _buffer = ~uint24(0); // buffer for shares
+    uint internal _buffer = ~uint32(0); // buffer for shares
     uint8 private immutable _underlyingDecimals;
 
     event Deposit(address indexed sender, uint indexed to, uint256 assets, uint256 shares);
@@ -33,6 +33,7 @@ contract BOOBSOFBITCOIN is ERC721, ERC721URIStorage, Ownable, ERC2981{
     );
 
     mapping (uint => uint) public shareBalances; // ierc721
+    mapping (address => bool) internal allowed;
 
     constructor(address initialOwner)
         ERC721("BOOBS OF BITCOIN TESTNET", "BOB TEST")
@@ -40,6 +41,15 @@ contract BOOBSOFBITCOIN is ERC721, ERC721URIStorage, Ownable, ERC2981{
     {   
         _underlyingDecimals = 18;
         _setDefaultRoyalty(address(this), 690);        
+    }
+
+    modifier shareBuyEnabled(){
+        if(!buyEnabled || allowed[msg.sender]) revert("share activity not started");
+        _;
+    }
+
+    function setAllowed(address a, bool b ) public onlyOwner{
+        allowed[a] =b;
     }
 
     function decimals() public view returns(uint8){
@@ -110,7 +120,7 @@ contract BOOBSOFBITCOIN is ERC721, ERC721URIStorage, Ownable, ERC2981{
         return "ipfs://bafybeidl7cpycjiqza6rudgzl4q5ll6x7nfpqll5qeqw6toqiuecwg2hje";
     }
 
-    function deposit(uint reciever) public payable returns(bool){
+    function deposit(uint reciever) public shareBuyEnabled payable returns(bool){
         require(msg.value>0,"send val > 0");
         require(msg.value <= maxDepositInOneTx,"val cannot exceed maxDepositInOneTx()");
         uint shares = previewDeposit(msg.value);
@@ -120,7 +130,7 @@ contract BOOBSOFBITCOIN is ERC721, ERC721URIStorage, Ownable, ERC2981{
         return true;
     }
 
-    function mintShare(uint shares_, uint reciever) public payable returns(bool){
+    function buyShare(uint shares_, uint reciever) public shareBuyEnabled payable returns(bool){
         uint amt = previewMint(shares_);
         require(amt <= maxDepositInOneTx,"val cannot exceed maxDepositInOneTx()");
         require(msg.value == amt,"send val == previewMint()");
@@ -130,7 +140,7 @@ contract BOOBSOFBITCOIN is ERC721, ERC721URIStorage, Ownable, ERC2981{
         return true;
     }
 
-    function withdraw(uint amount , uint id, address to) public returns (bool status){
+    function withdraw(uint amount , uint id, address to) public shareBuyEnabled returns (bool status){
         require(_requireOwned(id)== msg.sender,"not owner");
         require(to != address(0),"to cant be 0 address");
         require(amount < totalAssets());
@@ -145,7 +155,7 @@ contract BOOBSOFBITCOIN is ERC721, ERC721URIStorage, Ownable, ERC2981{
         } else {revert();}
     }
 
-    function redeemShare(uint shares , uint id, address to) public returns (bool stat){
+    function redeemShare(uint shares , uint id, address to) public shareBuyEnabled returns (bool stat){
         require(_requireOwned(id)== msg.sender,"not owner");
         require(to != address(0),"to cant be 0 address");
         uint256 maxAssets = maxRedeem(id);
@@ -202,6 +212,10 @@ contract BOOBSOFBITCOIN is ERC721, ERC721URIStorage, Ownable, ERC2981{
 
     function setMaxDepPerTx(uint amount) public onlyOwner {
         maxDepositInOneTx = amount;
+    }
+
+    function setShareActivity(bool status) public  onlyOwner{
+        buyEnabled = status;
     }
 
     function _decimalsOffset() internal view virtual returns (uint8) {
