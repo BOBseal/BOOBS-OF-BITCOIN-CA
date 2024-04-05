@@ -574,6 +574,19 @@
 				"type": "function"
 			},
 			{
+				"inputs": [],
+				"name": "maxDepositInOneTx",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "uint256",
@@ -662,6 +675,25 @@
 						"internalType": "string",
 						"name": "",
 						"type": "string"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "id",
+						"type": "uint256"
+					}
+				],
+				"name": "nftValue",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
 					}
 				],
 				"stateMutability": "view",
@@ -935,6 +967,19 @@
 			{
 				"inputs": [
 					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "setMaxDepPerTx",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
 						"internalType": "address",
 						"name": "reciever",
 						"type": "address"
@@ -959,6 +1004,19 @@
 					}
 				],
 				"name": "shareBalances",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "sharePrice",
 				"outputs": [
 					{
 						"internalType": "uint256",
@@ -1259,29 +1317,11 @@
 				"balanceOf(address)": {
 					"details": "See {IERC721-balanceOf}."
 				},
-				"convertToAssets(uint256)": {
-					"details": "See {IERC4626-convertToAssets}. "
-				},
-				"convertToShares(uint256)": {
-					"details": "See {IERC4626-convertToShares}. "
-				},
 				"getApproved(uint256)": {
 					"details": "See {IERC721-getApproved}."
 				},
 				"isApprovedForAll(address,address)": {
 					"details": "See {IERC721-isApprovedForAll}."
-				},
-				"maxDeposit(uint256)": {
-					"details": "See {IERC4626-maxDeposit}. "
-				},
-				"maxMint(uint256)": {
-					"details": "See {IERC4626-maxMint}. "
-				},
-				"maxRedeem(uint256)": {
-					"details": "See {IERC4626-maxRedeem}. "
-				},
-				"maxWithdraw(uint256)": {
-					"details": "See {IERC4626-maxWithdraw}. "
 				},
 				"name()": {
 					"details": "See {IERC721Metadata-name}."
@@ -1291,18 +1331,6 @@
 				},
 				"ownerOf(uint256)": {
 					"details": "See {IERC721-ownerOf}."
-				},
-				"previewDeposit(uint256)": {
-					"details": "See {IERC4626-previewDeposit}. "
-				},
-				"previewMint(uint256)": {
-					"details": "See {IERC4626-previewMint}. "
-				},
-				"previewRedeem(uint256)": {
-					"details": "See {IERC4626-previewRedeem}. "
-				},
-				"previewWithdraw(uint256)": {
-					"details": "See {IERC4626-previewWithdraw}. "
 				},
 				"renounceOwnership()": {
 					"details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner."
@@ -1321,9 +1349,6 @@
 				},
 				"symbol()": {
 					"details": "See {IERC721Metadata-symbol}."
-				},
-				"totalAssets()": {
-					"details": "See {IERC4626-totalAssets}. "
 				},
 				"transferFrom(address,address,uint256)": {
 					"details": "See {IERC721-transferFrom}."
@@ -1509,11 +1534,11 @@
 			]
 		},
 		"BOB_ERC4626_FORK/BOB-NFT.sol": {
-			"keccak256": "0xa39e0384b42ffef6d2f24bcdb9462cd3ca8bd95932e8075896dbb784092708ef",
+			"keccak256": "0x5d3d9112657009b9ce02a950a8493a4ae07d6fea7035c28ecf6c75839d245be5",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://acf3360e2f9480be999587f992724791286a65b19a03a7d2fb07f2335f0effbc",
-				"dweb:/ipfs/Qmc9pmiKELPLjUep7MjvJ47Jqc9oXYxtSh43dAAD3KCwqq"
+				"bzz-raw://72e76ea34258dd4416f21542eb05d1b3cf646c87d4921e3e2e90f71d28f4b650",
+				"dweb:/ipfs/QmdifdMkEUEhbbwV4TQ1KiKUFiaJ6ggLL59g1xSinVUCrg"
 			]
 		}
 	},

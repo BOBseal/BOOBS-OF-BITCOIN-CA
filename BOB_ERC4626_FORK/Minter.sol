@@ -38,7 +38,7 @@ contract BOBMinter is Ownable, IERC721Receiver{
     
     uint8 internal _MaxMintPerWallet = 10;
     
-    uint internal _CurrentRoundPrice = 0.00069 ether; // btc
+    uint internal _CurrentRoundPrice = 0.001 ether; // btc
     
     uint internal _MintsPerRound = 500; // each round has this no of mints before next round is initiated
     
@@ -46,9 +46,9 @@ contract BOBMinter is Ownable, IERC721Receiver{
 
     uint16 internal _roundMultiplier = 69; // each round increase lead to 6.9 % price hike
 
-    uint8 internal _ReferalBonus = 25; // 25% of referal bonus and 5% mint discount on mint from referal
+    uint8 internal _ReferalBonus = 15; // 5% of referal bonus and 5% mint discount on mint from referal
     
-    uint8 internal _shareDeposit = 20; // 20 % of mint price get deposited to minter's minted id as default share
+    uint8 internal _shareDeposit = 50; // 40 % of mint price get deposited to minter's minted id as default share
     
     uint public  currentRoundMints ; 
     
@@ -67,6 +67,7 @@ contract BOBMinter is Ownable, IERC721Receiver{
     { 
        NFTContract = new BOOBSOFBITCOIN(address(this));
     }
+
     // return nft contract minted on deployement of minter
     function nftContractAddress() public view returns (address _contract){
         _contract = address(NFTContract);
@@ -134,6 +135,7 @@ contract BOBMinter is Ownable, IERC721Receiver{
     // enter address(0) in case of non refered
     function mint(address referal) public payable {
         uint amount = getCurrentPrice(referal);
+        uint ref = referal == address(0) ? 0 : ((amount * _ReferalBonus) / 100);
         require( users[msg.sender].mintCount < _MaxMintPerWallet,"mint limit reached"); 
         require(msg.value == amount,"incorrect amount");
         require(_nextIdToMint < 10001 && mintStarted,"mint over or not started");
@@ -142,10 +144,10 @@ contract BOBMinter is Ownable, IERC721Receiver{
         }
         uint id = _nextIdToMint;
         uint16 currentRound = _CurrentRound;
-        accruedSales[address(0)] += referal == address(0) ? amount:amount - ((amount * _ReferalBonus) / 100);
-        
+        uint depositAmount = amount * uint(_shareDeposit) /100;
+        accruedSales[address(0)] += referal == address(0) ? amount - depositAmount :(amount - ref) - depositAmount;
         NFTContract.safeMint(msg.sender , id , _calculateUri(id));
-        NFTContract.deposit(id);
+        NFTContract.deposit{value: depositAmount}(id);
         _nextIdToMint +=1;
         users[msg.sender].mintCount += 1;
         currentRoundMints += 1;

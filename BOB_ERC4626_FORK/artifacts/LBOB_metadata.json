@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.25+commit.b61c2a91"
+		"version": "0.8.20+commit.a1b79de6"
 	},
 	"language": "Solidity",
 	"output": {
@@ -18,9 +18,9 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"BOB/Minter.sol": "LBOB"
+			"BOB_ERC4626_FORK/Minter.sol": "LBOB"
 		},
-		"evmVersion": "cancun",
+		"evmVersion": "shanghai",
 		"libraries": {},
 		"metadata": {
 			"bytecodeHash": "ipfs"
@@ -184,20 +184,20 @@
 				"dweb:/ipfs/QmVBEei6aTnvYNZp2CHYVNKyZS4q1KkjANfY39WVXZXVoT"
 			]
 		},
-		"BOB/BOB-NFT.sol": {
-			"keccak256": "0x919fd39c648128b3ddaf60a463fbfd8d2f61c8e0f83c90af49a468835ad6a569",
+		"BOB_ERC4626_FORK/BOB-NFT.sol": {
+			"keccak256": "0xa39e0384b42ffef6d2f24bcdb9462cd3ca8bd95932e8075896dbb784092708ef",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://62ed4521157f3d511942d2e439f03ff331822f1b6e8fecc16c97e942a17cc354",
-				"dweb:/ipfs/QmdHpBePHxT6buUPY3kyotQ9HrD1sbDmBEkbttp3HYpExp"
+				"bzz-raw://acf3360e2f9480be999587f992724791286a65b19a03a7d2fb07f2335f0effbc",
+				"dweb:/ipfs/Qmc9pmiKELPLjUep7MjvJ47Jqc9oXYxtSh43dAAD3KCwqq"
 			]
 		},
-		"BOB/Minter.sol": {
-			"keccak256": "0x67a9eb90e2172adb2e512c5c74defb49f17baa4a19624ada7ca3b34d81f8cc57",
+		"BOB_ERC4626_FORK/Minter.sol": {
+			"keccak256": "0x6236b3d95216573bdff8ae7b404606b016b96bc8c0230ebaa6b3cab4662c8315",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://406f3430f5ce1d0a44508824a866e78a44d1224906d8946f02f65e5141070760",
-				"dweb:/ipfs/QmTM2YMqAVUq4mh2uQGGaJfgNPtvMoRVL4Q6mnqtRtwzzq"
+				"bzz-raw://71a2f83c2de36f30e7f927656562b897a106b0e544d19ebf6cf02c0e0c02885c",
+				"dweb:/ipfs/QmWd1gvkj2UXfdhrAhSZtfXpT81MbaMer9qR62YTN9HTKZ"
 			]
 		}
 	},

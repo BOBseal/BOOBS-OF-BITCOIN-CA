@@ -16,9 +16,10 @@ import {ERC2981} from "@openzeppelin/contracts/token/common/ERC2981.sol";
 contract BOOBSOFBITCOIN is ERC721, ERC721URIStorage, Ownable, ERC2981{
     using Math for uint;
     uint public totalSupply = 10000;
-    //IERC20 internal asset;
-    //uint internal _totalAssets ;
+    uint public  maxDepositInOneTx = 0.1 ether; // 0.1 btc per deposit tx , to stop from one attacker gaining all shares
+    
     uint internal _totalShares;
+    uint internal _buffer = ~uint24(0); // buffer for shares
     uint8 private immutable _underlyingDecimals;
 
     event Deposit(address indexed sender, uint indexed to, uint256 assets, uint256 shares);
@@ -41,65 +42,66 @@ contract BOOBSOFBITCOIN is ERC721, ERC721URIStorage, Ownable, ERC2981{
         _setDefaultRoyalty(address(this), 690);        
     }
 
-    function decimals() public view virtual returns (uint8) {
-        return _underlyingDecimals + _decimalsOffset();
+    function decimals() public view returns(uint8){
+        return _decimalsOffset();
     }
 
-    /** @dev See {IERC4626-totalAssets}. */
-    function totalAssets() public view virtual returns (uint256) {
+    function sharePrice() public view returns(uint){
+        return convertToAssets(1 * 10 ** decimals());
+    }
+
+    function nftValue(uint id) public view returns(uint){
+       return convertToAssets(shareBalances[id]);
+    }
+    
+    function totalAssets() public view returns(uint){
         return address(this).balance;
+    }
+
+    function _totalAssets() internal view virtual returns (uint256) {
+        return address(this).balance + 1 * (10 ** (_decimalsOffset() - 1));
     }
 
     function totalShares() public view returns(uint){
         return _totalShares;
     }
 
-    /** @dev See {IERC4626-convertToShares}. */
     function convertToShares(uint256 assets) public view virtual returns (uint256) {
         return _convertToShares(assets, Math.Rounding.Floor);
     }
 
-    /** @dev See {IERC4626-convertToAssets}. */
     function convertToAssets(uint256 shares) public view virtual returns (uint256) {
         return _convertToAssets(shares, Math.Rounding.Floor);
     }
 
-    /** @dev See {IERC4626-maxDeposit}. */
     function maxDeposit(uint) public view virtual returns (uint256) {
         return type(uint256).max;
     }
 
-    /** @dev See {IERC4626-maxMint}. */
     function maxMint(uint) public view virtual returns (uint256) {
         return type(uint256).max;
     }
 
-    /** @dev See {IERC4626-maxWithdraw}. */
     function maxWithdraw(uint id) public view virtual returns (uint256) {
         return _convertToAssets(shareBalances[id], Math.Rounding.Floor);
     }
 
-    /** @dev See {IERC4626-maxRedeem}. */
     function maxRedeem(uint id) public view virtual returns (uint256) {
         return shareBalances[id];
     }
 
-     /** @dev See {IERC4626-previewDeposit}. */
     function previewDeposit(uint256 assets) public view virtual returns (uint256) {
         return _convertToShares(assets, Math.Rounding.Floor);
     }
 
-    /** @dev See {IERC4626-previewWithdraw}. */
     function previewWithdraw(uint256 assets) public view virtual returns (uint256) {
         return _convertToShares(assets, Math.Rounding.Ceil);
     }
 
-      /** @dev See {IERC4626-previewMint}. */
     function previewMint(uint256 shares) public view virtual returns (uint256) {
         return _convertToAssets(shares, Math.Rounding.Ceil);
     }
 
-     /** @dev See {IERC4626-previewRedeem}. */
     function previewRedeem(uint256 shares) public view virtual returns (uint256) {
         return _convertToAssets(shares, Math.Rounding.Floor);
     }
@@ -108,9 +110,9 @@ contract BOOBSOFBITCOIN is ERC721, ERC721URIStorage, Ownable, ERC2981{
         return "ipfs://bafybeidl7cpycjiqza6rudgzl4q5ll6x7nfpqll5qeqw6toqiuecwg2hje";
     }
 
-    //wrap wei into a id by owner of the id
     function deposit(uint reciever) public payable returns(bool){
         require(msg.value>0,"send val > 0");
+        require(msg.value <= maxDepositInOneTx,"val cannot exceed maxDepositInOneTx()");
         uint shares = previewDeposit(msg.value);
         shareBalances[reciever] += shares;
         _totalShares += shares;
@@ -120,14 +122,14 @@ contract BOOBSOFBITCOIN is ERC721, ERC721URIStorage, Ownable, ERC2981{
 
     function mintShare(uint shares_, uint reciever) public payable returns(bool){
         uint amt = previewMint(shares_);
+        require(amt <= maxDepositInOneTx,"val cannot exceed maxDepositInOneTx()");
         require(msg.value == amt,"send val == previewMint()");
-        shareBalances[reciever] += shares_;
-        _totalShares += shares_;
+        shareBalances[reciever] += shares_ ;
+        _totalShares += shares_ ;
         emit Deposit(msg.sender,reciever,msg.value, shares_);
         return true;
     }
 
-    // withdraw wei , msg.sender must be owner
     function withdraw(uint amount , uint id, address to) public returns (bool status){
         require(_requireOwned(id)== msg.sender,"not owner");
         require(to != address(0),"to cant be 0 address");
@@ -137,8 +139,8 @@ contract BOOBSOFBITCOIN is ERC721, ERC721URIStorage, Ownable, ERC2981{
         uint shares = previewWithdraw(amount);
         status = payable (to).send(amount);
         if(status){
-            shareBalances[id] -= shares;
-            _totalShares -= shares;
+            shareBalances[id] -= shares ;
+            _totalShares -= shares ;
             emit Withdraw(id, to, msg.sender,amount, shares);
         } else {revert();}
     }
@@ -148,7 +150,7 @@ contract BOOBSOFBITCOIN is ERC721, ERC721URIStorage, Ownable, ERC2981{
         require(to != address(0),"to cant be 0 address");
         uint256 maxAssets = maxRedeem(id);
         require(shares <= shareBalances[id], "not enough shares");
-        require(maxAssets <totalAssets());
+        require(maxAssets <totalAssets() && shares > 0);
         uint amt = previewRedeem(shares);
         stat = payable(to).send(amt);
         if(stat){
@@ -190,19 +192,20 @@ contract BOOBSOFBITCOIN is ERC721, ERC721URIStorage, Ownable, ERC2981{
         return super.supportsInterface(interfaceId);
     }
 
-     function _convertToShares(uint256 assets, Math.Rounding rounding) internal view virtual returns (uint256) {
-        return assets.mulDiv(_totalShares + 10 ** _decimalsOffset(), totalAssets(), rounding);
+    function _convertToShares(uint256 assets, Math.Rounding rounding) internal view virtual returns (uint256) {
+        return assets.mulDiv((_totalShares + _buffer) + 10 ** _decimalsOffset(), _totalAssets(), rounding);
     }
 
-    /**
-     * @dev Internal conversion function (from shares to assets) with support for rounding direction.
-     */
     function _convertToAssets(uint256 shares, Math.Rounding rounding) internal view virtual returns (uint256) {
-        return shares.mulDiv(totalAssets() + 1, _totalShares + 10 ** _decimalsOffset(), rounding);
+        return shares.mulDiv(_totalAssets() + 1, (_totalShares + _buffer) + 10 ** _decimalsOffset(), rounding);
+    }
+
+    function setMaxDepPerTx(uint amount) public onlyOwner {
+        maxDepositInOneTx = amount;
     }
 
     function _decimalsOffset() internal view virtual returns (uint8) {
-        return 0;
+        return 8;
     }
 
     receive() external payable {}
