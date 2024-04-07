@@ -27,26 +27,49 @@ library LBOB {
         mapping (address => uint) referalBalances;
         mapping (uint => address) referal;
     }
+
+    struct Whitelist{
+        uint mints;
+        bool whitelisted;    
+    }
+
+    struct Rounds{
+        mapping(uint => uint) participants;
+        uint[] winners;
+        uint roundPool;
+        uint balances;
+    }
 }
 
 contract BOBMinter is Ownable, IERC721Receiver{
+
     bytes16 private constant HEX_DIGITS = "0123456789abcdef";
 
     uint8 private constant ADDRESS_LENGTH = 20;
 
     uint internal _nextIdToMint = 1;
     
-    uint8 internal _MaxMintPerWallet = 10;
+    uint8 internal _MaxMintPerWallet = 30; // max mint per wallet aggregated over all rounds
     
     uint internal _CurrentRoundPrice = 0.00069 ether; // btc
     
-    uint internal _MintsPerRound = 500; // each round has this no of mints before next round is initiated
+    uint internal _MintsPerRound = 100; // each round has this no of mints before next round is initiated
+
+    uint internal _bonusPointsPerReferal = 69 * 10 ** 18; // each referal gives extra this amount of bonus point to their minted nft
     
     uint16 internal _CurrentRound = 1;
+    
+    uint8 internal _winnersPerRound = 5;
+    
+    uint8 internal _whitelistMint = 4; // 4 mints for whitelist
 
-    uint16 internal _roundMultiplier = 69; // each round increase lead to 6.9 % price hike
+    uint8 internal maxWhitelistAddress = 100; // max whitelist is 100 
+    
+    uint8 internal whitelistCount; // internal count
+    
+    uint internal _lottery = 15 ; // 10% of mint per round goes to lottery
 
-    uint8 internal _ReferalBonus = 25; // 25% of referal bonus and 5% mint discount on mint from referal
+    uint8 internal _ReferalBonus = 15; // 15% of referal bonus on mint from referal
     
     uint public  currentRoundMints ; 
     
@@ -59,7 +82,12 @@ contract BOBMinter is Ownable, IERC721Receiver{
     mapping (address => LBOB.User) internal users;
     mapping (address => LBOB.UserMaps) internal  userMapping;
     mapping (address => uint) public  accruedSales;
-
+    mapping (address => LBOB.Whitelist) internal whitelist; 
+    mapping (uint16 => mapping (uint => bool)) internal winners; // lottery winners per round , lottery winners are nft ids , not addresses , and whoever get hold claim the balances
+    mapping (uint16 => LBOB.Rounds) internal rounds; // data per round
+    mapping (uint => uint) internal winBalances; // balances of ids that won in their mint round , only owner can claim
+    mapping (address => uint) public bonusAllocations; // bonus allocations for referals that at the end user can bind to their nfts
+      
     constructor()
     Ownable(msg.sender)
     { 
@@ -74,18 +102,20 @@ contract BOBMinter is Ownable, IERC721Receiver{
         roundNo = Current Round 
         price   = Current Round Price Per Mint
     */
-    function getCurrentPrice(address referal) public view returns (uint price){
-        if(referal == address(0))
-        {
+    function getCurrentPrice() public view returns (uint price){
             price = _CurrentRoundPrice;
-        }
-        else {
-            price = _CurrentRoundPrice - (_CurrentRoundPrice * 5 /100);
-        }
     }
 
-    function getNextRoundPrice() public view returns (uint){
-        return  (_CurrentRoundPrice + ((_CurrentRoundPrice * _roundMultiplier)/1000));
+    function getRoundPool(uint16 round) public view returns (uint, uint){
+        return (rounds[round].roundPool, rounds[round].balances) ;
+    }
+
+    function getRoundWinnerIds(uint16 round) public view returns(uint[] memory){
+        return rounds[round].winners;
+    }
+
+    function isWhitelisted(address user) public view returns(bool){
+        return whitelist [user].whitelisted;
     }
 
     function supplyLeft() public view returns(uint){
@@ -96,7 +126,7 @@ contract BOBMinter is Ownable, IERC721Receiver{
         return  _nextIdToMint -1;
     }
 
-    function getCurrentRound() public view returns(uint){
+    function getCurrentRound() public view returns(uint16){
         return  _CurrentRound;
     }
 
@@ -117,11 +147,34 @@ contract BOBMinter is Ownable, IERC721Receiver{
         return  userMapping[user].referal[refNonce];
     }
 
-    function getUserEarnings(address user) public view returns (uint) {
+    function getReferalEarnings(address user) public view returns (uint) {
         return  userMapping[user].referalBalances[address(0)];
     }
-
-    function withdrawEarnings(uint amount) public returns(bool){
+    // binds the bonus allocations to BOB NFTs if they own one;
+    function bindBonusAllocation(uint toId) public {
+        require(NFTContract.ownerOf(toId)== msg.sender,"not owner of id to bind");
+        require(bonusAllocations[msg.sender]>0,"already bound");
+        bool x = NFTContract.addBonusAllocation(toId, bonusAllocations[msg.sender]);
+        if(!x){
+            revert();
+        } else{
+            bonusAllocations[msg.sender] = 0;
+        }
+    }
+    // claims the raffle win amount to the owner of the winner id , one address can win multiple times 
+    //if he/she owns (does not need to be minted) the lucky ids selected through random draw
+    function claimRaffleWin(uint id) public {
+        require(NFTContract.ownerOf(id)== msg.sender,"not owner of id to claim");
+        require(winBalances[id]>0,"already withdrawn");
+        bool x = payable(msg.sender).send(winBalances[id]);
+        if(!x){
+            revert("0x");
+        } else {
+            winBalances[id] = 0;
+        }
+    }
+    // participants can claim their referal earnings through this
+    function withdrawReferalEarnings(uint amount) public returns(bool){
         require(userMapping[msg.sender].referalBalances[address(0)]>= amount);
         bool x = payable(msg.sender).send(amount);
         if(x){
@@ -129,45 +182,72 @@ contract BOBMinter is Ownable, IERC721Receiver{
             return true;
         } else {return false;}
     }
+
     // enter address(0) in case of non refered
     function mint(address referal) public payable {
-        uint amount = getCurrentPrice(referal);
+        uint amount = whitelist[msg.sender].whitelisted? 0 : getCurrentPrice();
         require( users[msg.sender].mintCount < _MaxMintPerWallet,"mint limit reached"); 
-        require(msg.value == amount,"incorrect amount");
+        require(msg.value == amount,"incorrect mint fee amount");
         require(_nextIdToMint < 10001 && mintStarted,"mint over or not started");
         if(referal != address(0)){
             require( hasMinted(referal) && referal != msg.sender,"referer must mint first");     
         }
         uint id = _nextIdToMint;
         uint16 currentRound = _CurrentRound;
-        
-        accruedSales[address(0)] += referal == address(0) ? amount:amount - ((amount * _ReferalBonus) / 100);
-        
-        NFTContract.safeMint(msg.sender , id , _calculateUri(id));
-        
-        _nextIdToMint +=1;
-        users[msg.sender].mintCount += 1;
-        currentRoundMints += 1;
-        
-        if(referal != address(0)){
-            uint x = users[referal].totalReferals;
-            users[referal].totalReferals +=1;
-            userMapping[referal].referalBalances[address(0)] += (amount * _ReferalBonus) / 100;
-            userMapping[referal].referal[x] = msg.sender;
+        // checks if whitelisted
+        if(!whitelist[msg.sender].whitelisted){
+            // calculate the referal and to pool amounts
+            uint referalBonus = (amount * uint(_ReferalBonus)) / 100;
+            uint toPool = (amount * _lottery) / 100;
+            // mints the nft
+            NFTContract.safeMint(msg.sender , id , _calculateUri(id));
+            // handle adding to the pool the lottery amount, 15%
+            _addRoundPool(currentRound, toPool);
+            // randomize the indexes of participant and pushed to a mapping 
+            _pushParticipant(currentRound, id);
+            // handle states
+            _nextIdToMint +=1;
+            users[msg.sender].mintCount += 1;
+            currentRoundMints += 1;
+            // handle referals
+            if(referal != address(0)){
+                uint x = users[referal].totalReferals;
+                users[referal].totalReferals +=1;
+                userMapping[referal].referalBalances[address(0)] += referalBonus;
+                userMapping[referal].referal[x] = msg.sender;
+                bonusAllocations[referal] += _bonusPointsPerReferal;
+                bonusAllocations[msg.sender] += _bonusPointsPerReferal;
+            }
+            
+            LBOB.Mint memory Mint =LBOB.Mint({
+                Id:id,
+                MintedRound:currentRound,
+                PriceCost:msg.value
+            });
+            
+            users[msg.sender].mints.push(Mint);
+            // adds to contract balances
+            amount = amount - toPool;
+            accruedSales[address(0)] += referal == address(0) ? amount: amount - referalBonus;
+        } else {
+            NFTContract.safeMint(msg.sender , id , _calculateUri(id));
+            _pushParticipant(currentRound, id);
+            _nextIdToMint +=1;
+            users[msg.sender].mintCount += 1;
+            currentRoundMints += 1;
+            
+            LBOB.Mint memory Mint =LBOB.Mint({
+                Id:id,
+                MintedRound:currentRound,
+                PriceCost:msg.value
+            });
+            users[msg.sender].mints.push(Mint);
         }
-        
-        LBOB.Mint memory Mint =LBOB.Mint({
-            Id:id,
-            MintedRound:currentRound,
-            PriceCost:msg.value
-        });
-        
-        users[msg.sender].mints.push(Mint);
-
+        // if mints per round limit reached select winners and distribute rewards to winner ids to claim and start next round
         if(currentRoundMints >= _MintsPerRound){
-            currentRoundMints = 0;
-            _CurrentRound +=1;
-            _CurrentRoundPrice = getNextRoundPrice();
+                _selectWinnersAndDistribute(currentRound , rounds[currentRound].roundPool);
+                currentRoundMints = 0;
+                _CurrentRound +=1;
         }
     }
 
@@ -218,6 +298,23 @@ contract BOBMinter is Ownable, IERC721Receiver{
     function _calculateUri(uint id) internal pure returns(string memory){
         return (string.concat("/json/",_toString(id),".json"));
     }
+
+    function _pushParticipant(uint16 round,uint participant) internal{
+        uint n = getRandomNumber();// Shuffle participants mapping according to random indexes
+        rounds[round].participants[n] = participant;
+    }
+
+    function _addRoundPool(uint16 round,uint amount) internal{
+        rounds[round].roundPool += amount;
+        rounds[round].balances += amount;
+    }
+
+    function setWhitelist(address For , bool stat) public  onlyOwner{
+        require(whitelistCount <= maxWhitelistAddress,"wl spots over");
+        whitelist[For].whitelisted = stat;
+        whitelistCount = stat ? whitelistCount + 1: whitelistCount -1;
+    }
+
     // transfer back nft ownership after minting is over
     function transferOwnershipNFT(address to) public  onlyOwner{
         NFTContract.transferOwnership(to);
@@ -226,6 +323,29 @@ contract BOBMinter is Ownable, IERC721Receiver{
     function setMintStatus(bool state) public onlyOwner{
         mintStarted = state;
     }
+    
+    function _selectWinnersAndDistribute(uint16 round, uint totalPool) internal {
+        // Select the first _winnersPerRound no of shuffled participants as winners
+        for (uint256 i = 0; i < uint(_winnersPerRound); i++) {
+            rounds[round].winners.push(rounds[round].participants[i]);
+        }
+        _distribute(round,totalPool , rounds[round].winners);
+    }
+
+    // returns a random index for the mint for current round participant list, at end the, of the randomized participant list the first 3 indexes are awared the reward
+    function getRandomNumber() public view returns (uint256) {
+        uint256 randomNumber = uint256(keccak256(abi.encodePacked(_nextIdToMint, msg.sender, block.timestamp)));
+        return (randomNumber % _MintsPerRound) + 1; // Range: 1-MintsPerRound
+    }
+
+    function _distribute(uint16 round,uint totalPool , uint[] memory participants) internal {
+        uint amount = totalPool / uint(_winnersPerRound);
+        for (uint i = 0; i < participants.length ; i++){
+            uint to = participants[i];
+            winBalances[to] += amount;
+            rounds[round].balances -= amount;
+        }
+    } 
 
     receive() external payable {
         accruedSales[address(0)] += msg.value;
