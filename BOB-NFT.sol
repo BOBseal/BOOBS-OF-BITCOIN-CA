@@ -66,7 +66,6 @@ contract BOOBSOFBITCOIN is ERC721, ERC721URIStorage, Ownable, ERC2981{
         _safeMint(to, tokenId);
         extraData[tokenId].originalMinter = to;
         _setTokenURI(tokenId, uri);
-        extraData[tokenId].originalMinter = to;
         _setTokenRoyalty(tokenId , to , 690);
     }
 

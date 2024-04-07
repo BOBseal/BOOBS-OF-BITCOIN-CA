@@ -53,13 +53,13 @@ contract BOBMinter is Ownable, IERC721Receiver{
     
     uint internal _CurrentRoundPrice = 0.00069 ether; // btc
     
-    uint internal _MintsPerRound = 100; // each round has this no of mints before next round is initiated
+    uint internal _MintsPerRound = 500; // each round has this no of mints before next round is initiated
 
     uint internal _bonusPointsPerReferal = 69 * 10 ** 18; // each referal gives extra this amount of bonus point to their minted nft
     
     uint16 internal _CurrentRound = 1;
     
-    uint8 internal _winnersPerRound = 5;
+    uint8 internal _winnersPerRound = 5; // 5 random winner ids , each winner eligible for equal rewards from a reward pool from 15% of 500 mints (1 round)  
     
     uint8 internal _whitelistMint = 4; // 4 mints for whitelist
 
