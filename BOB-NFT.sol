@@ -29,7 +29,7 @@ contract BOOBSOFBITCOIN is ERC721, ERC721URIStorage, Ownable, ERC2981{
     mapping (uint => BOB) internal extraData;
 
     constructor(address initialOwner)
-        ERC721("BOOBS OF BITCOIN TESTNET", "BOB TEST")
+        ERC721("BOOBS OF BITCOIN", "BOB")
         Ownable(initialOwner)
     {   
         //Royalty of 6.9%
