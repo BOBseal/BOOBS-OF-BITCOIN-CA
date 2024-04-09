@@ -1,0 +1,46 @@
+{
+	"compiler": {
+		"version": "0.8.20+commit.a1b79de6"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [],
+		"devdoc": {
+			"details": "Provides information about the current execution context, including the sender of the transaction and its data. While these are generally available via msg.sender and msg.data, they should not be accessed in such a direct manner, since when dealing with meta-transactions the account sending and paying for execution may not be the actual sender (as far as an application is concerned). This contract is only required for intermediate, library-like contracts.",
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"BOOBS-OF-BITCOIN-CA/Minter_flattened.sol": "Context"
+		},
+		"evmVersion": "shanghai",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"BOOBS-OF-BITCOIN-CA/Minter_flattened.sol": {
+			"keccak256": "0xf6200433c39d3724f87986c5b904eedacdb0fc53b4f483b2e55fea00536e103d",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://1faa083070c72dce046e6bf060dd68ec8ce9aae64c9c1b39057ec7b2d165f491",
+				"dweb:/ipfs/QmRefwLknccduh56qPRdSdeDSeeo7twBW1QDfzQb5Twiaw"
+			]
+		}
+	},
+	"version": 1
+}

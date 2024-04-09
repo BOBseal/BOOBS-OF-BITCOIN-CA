@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.25+commit.b61c2a91"
+		"version": "0.8.20+commit.a1b79de6"
 	},
 	"language": "Solidity",
 	"output": {
@@ -186,19 +186,6 @@
 						"internalType": "uint16",
 						"name": "",
 						"type": "uint16"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "getRandomNumber",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
 					}
 				],
 				"stateMutability": "view",
@@ -421,7 +408,7 @@
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "referal",
+						"name": "ref",
 						"type": "address"
 					}
 				],
@@ -699,7 +686,7 @@
 		"compilationTarget": {
 			"BOOBS-OF-BITCOIN-CA/Minter.sol": "BOBMinter"
 		},
-		"evmVersion": "cancun",
+		"evmVersion": "shanghai",
 		"libraries": {},
 		"metadata": {
 			"bytecodeHash": "ipfs"
@@ -864,19 +851,19 @@
 			]
 		},
 		"BOOBS-OF-BITCOIN-CA/BOB-NFT.sol": {
-			"keccak256": "0x565ec06abdf01db19849b5fe7d53638bf0ed8895cb524980573d3f2c6c05bb51",
+			"keccak256": "0xf6bd0883f33061b49b834576013cb2e7ce7bc35f4860991c263b0c8b4bd2a24e",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://b152e0399a1fa5b7552fd773a5733a66bb30429d67b2022f8f9be340627443d3",
-				"dweb:/ipfs/QmafbUyNDe9chEjkNx75cj9DzESZ7pr7dSFeTvxuYHpq75"
+				"bzz-raw://c2200d6bad02dfea32748e5bbb84bb9aa5e424e5952cc99ea9321ccd57be3bfc",
+				"dweb:/ipfs/Qmbspo8MGVgp7QA163RTrmVg2mr5HgBzaLYHAiLrqhCpU4"
 			]
 		},
 		"BOOBS-OF-BITCOIN-CA/Minter.sol": {
-			"keccak256": "0xd799bf07f87b91bb155cd3293755a558d10209b7046354969948049b7b6cea4e",
+			"keccak256": "0xc8a71e31fd08213373d80ad337b826f6ee25c75bd348d5f4f4665de871a71a4d",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://de1c5290efd24b74807cde9bbbad1f18dd6012ac4bf5d1047f3fabc0129914da",
-				"dweb:/ipfs/Qma4iExa9M3Eu4VM6F1ZT66GasHmdgg8am1Y1gqW8oJJKX"
+				"bzz-raw://03a4793b949fac46ed42bb4d530ae9f89da09d22c3f50e24aa0a9c6530d912e2",
+				"dweb:/ipfs/QmRc1s6PRBSYMeDZeGkywbJxPUCVi2QqCiMQ1EvmEhtxHD"
 			]
 		}
 	},

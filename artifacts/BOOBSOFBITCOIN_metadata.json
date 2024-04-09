@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.25+commit.b61c2a91"
+		"version": "0.8.20+commit.a1b79de6"
 	},
 	"language": "Solidity",
 	"output": {
@@ -428,6 +428,24 @@
 				"inputs": [
 					{
 						"internalType": "address",
+						"name": "a",
+						"type": "address"
+					},
+					{
+						"internalType": "bool",
+						"name": "state",
+						"type": "bool"
+					}
+				],
+				"name": "addManager",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
 						"name": "to",
 						"type": "address"
 					},
@@ -774,6 +792,30 @@
 			{
 				"inputs": [
 					{
+						"internalType": "uint256",
+						"name": "id",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "subBonusAllocation",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
 						"internalType": "bytes4",
 						"name": "interfaceId",
 						"type": "bytes4"
@@ -1053,7 +1095,7 @@
 		"compilationTarget": {
 			"BOOBS-OF-BITCOIN-CA/BOB-NFT.sol": "BOOBSOFBITCOIN"
 		},
-		"evmVersion": "cancun",
+		"evmVersion": "shanghai",
 		"libraries": {},
 		"metadata": {
 			"bytecodeHash": "ipfs"
@@ -1218,11 +1260,11 @@
 			]
 		},
 		"BOOBS-OF-BITCOIN-CA/BOB-NFT.sol": {
-			"keccak256": "0x565ec06abdf01db19849b5fe7d53638bf0ed8895cb524980573d3f2c6c05bb51",
+			"keccak256": "0xafcd7a6ded603c2a00451b159e5dfbd3f12355105df162c29afe873432c4ddd3",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://b152e0399a1fa5b7552fd773a5733a66bb30429d67b2022f8f9be340627443d3",
-				"dweb:/ipfs/QmafbUyNDe9chEjkNx75cj9DzESZ7pr7dSFeTvxuYHpq75"
+				"bzz-raw://e2cd2e33e9b4bd8a73ec2510e85f5155142641e77b214430d5e5a0eb35062e48",
+				"dweb:/ipfs/QmYcwrERCxFkzBnHFp9LA6LZNP9BhYp3n6fsMpjC6BPMai"
 			]
 		}
 	},

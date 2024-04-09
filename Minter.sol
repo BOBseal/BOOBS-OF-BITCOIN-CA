@@ -24,6 +24,7 @@ library LBOB {
     }
 
     struct UserMaps{
+        address referer;
         mapping (address => uint) referalBalances;
         mapping (uint => address) referal;
     }
@@ -51,9 +52,9 @@ contract BOBMinter is Ownable, IERC721Receiver{
     
     uint8 internal _MaxMintPerWallet = 30; // max mint per wallet aggregated over all rounds
     
-    uint internal _CurrentRoundPrice = 0.00069 ether; // btc
+    uint internal _CurrentRoundPrice = 0.0012 ether; // btc
     
-    uint internal _MintsPerRound = 500; // each round has this no of mints before next round is initiated
+    uint internal _MintsPerRound = 50; // each round has this no of mints before next round is initiated
 
     uint internal _bonusPointsPerReferal = 69 * 10 ** 18; // each referal gives extra this amount of bonus point to their minted nft
     
@@ -71,7 +72,7 @@ contract BOBMinter is Ownable, IERC721Receiver{
 
     uint8 internal _ReferalBonus = 15; // 15% of referal bonus on mint from referal
     
-    uint public  currentRoundMints ; 
+    uint public  currentRoundMints ; // mints so far in current round
     
     bool public mintStarted = false;
 
@@ -184,7 +185,8 @@ contract BOBMinter is Ownable, IERC721Receiver{
     }
 
     // enter address(0) in case of non refered
-    function mint(address referal) public payable {
+    function mint(address ref) public payable {
+        address referal = ref;
         uint amount = whitelist[msg.sender].whitelisted? 0 : getCurrentPrice();
         require( users[msg.sender].mintCount < _MaxMintPerWallet,"mint limit reached"); 
         require(msg.value == amount,"incorrect mint fee amount");
@@ -215,6 +217,14 @@ contract BOBMinter is Ownable, IERC721Receiver{
                 users[referal].totalReferals +=1;
                 userMapping[referal].referalBalances[address(0)] += referalBonus;
                 userMapping[referal].referal[x] = msg.sender;
+                userMapping[msg.sender].referer = referal;
+                bonusAllocations[referal] += _bonusPointsPerReferal;
+                bonusAllocations[msg.sender] += _bonusPointsPerReferal;
+            }
+            // handles if user already has a referer
+            if(userMapping[msg.sender].referer != address(0)){
+                referal = userMapping[msg.sender].referer;
+                userMapping[referal].referalBalances[address(0)] += referalBonus;
                 bonusAllocations[referal] += _bonusPointsPerReferal;
                 bonusAllocations[msg.sender] += _bonusPointsPerReferal;
             }
@@ -333,7 +343,7 @@ contract BOBMinter is Ownable, IERC721Receiver{
     }
 
     // returns a random index for the mint for current round participant list, at end the, of the randomized participant list the first 3 indexes are awared the reward
-    function getRandomNumber() public view returns (uint256) {
+    function getRandomNumber() internal view returns (uint256) {
         uint256 randomNumber = uint256(keccak256(abi.encodePacked(_nextIdToMint, msg.sender, block.timestamp)));
         return (randomNumber % _MintsPerRound) + 1; // Range: 1-MintsPerRound
     }
@@ -342,7 +352,10 @@ contract BOBMinter is Ownable, IERC721Receiver{
         uint amount = totalPool / uint(_winnersPerRound);
         for (uint i = 0; i < participants.length ; i++){
             uint to = participants[i];
+            // distribute the reward pool amount
             winBalances[to] += amount;
+            // add bonus allocation
+            NFTContract.addBonusAllocation(to , 25000 * 10 ** 18);
             rounds[round].balances -= amount;
         }
     } 
