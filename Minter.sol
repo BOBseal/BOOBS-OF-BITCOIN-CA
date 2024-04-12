@@ -47,22 +47,20 @@ contract BOBMinter is Ownable, IERC721Receiver{
     bytes16 private constant HEX_DIGITS = "0123456789abcdef";
 
     uint8 private constant ADDRESS_LENGTH = 20;
-
+    
     uint internal _nextIdToMint = 1;
     
-    uint8 internal _MaxMintPerWallet = 30; // max mint per wallet aggregated over all rounds
+    uint8 internal _MaxMintPerWallet = 50; // max mint per wallet aggregated over all rounds
     
-    uint internal _CurrentRoundPrice = 0.0012 ether; // btc
-    
-    uint internal _MintsPerRound = 50; // each round has this no of mints before next round is initiated
+    uint internal _CurrentRoundPrice = 0 ether; // btc
+
+    uint internal _MintsPerRound = 1000; // each round has this no of mints before next round is initiated
 
     uint internal _bonusPointsPerReferal = 69 * 10 ** 18; // each referal gives extra this amount of bonus point to their minted nft
     
-    uint16 internal _CurrentRound = 1;
+    uint16 internal _CurrentRound = 1; // 1st round is free mint of 1000 , second round is 0.00015 btc , and after that there is a 69% increase in mint price for each round
     
-    uint8 internal _winnersPerRound = 5; // 5 random winner ids , each winner eligible for equal rewards from a reward pool from 15% of 500 mints (1 round)  
-    
-    uint8 internal _whitelistMint = 4; // 4 mints for whitelist
+    uint8 internal _winnersPerRound = 3; // 3 random winner ids , each winner eligible for equal rewards from a reward pool from 15% of 1000 mints (1 round)  
 
     uint8 internal maxWhitelistAddress = 100; // max whitelist is 100 
     
@@ -105,6 +103,14 @@ contract BOBMinter is Ownable, IERC721Receiver{
     */
     function getCurrentPrice() public view returns (uint price){
             price = _CurrentRoundPrice;
+    }
+
+    function getNextPrice() public view returns (uint price){
+        if(_CurrentRoundPrice == 0 && _CurrentRound == 1){
+            return 0.00015 ether;
+        } else if(_CurrentRoundPrice == 0 && _CurrentRound > 1){
+            _CurrentRoundPrice + ((_CurrentRoundPrice * 110) / 100);
+        }
     }
 
     function getRoundPool(uint16 round) public view returns (uint, uint){
@@ -222,7 +228,7 @@ contract BOBMinter is Ownable, IERC721Receiver{
                 bonusAllocations[msg.sender] += _bonusPointsPerReferal;
             }
             // handles if user already has a referer
-            if(userMapping[msg.sender].referer != address(0)){
+            if(referal == address(0) && userMapping[msg.sender].referer != address(0)){
                 referal = userMapping[msg.sender].referer;
                 userMapping[referal].referalBalances[address(0)] += referalBonus;
                 bonusAllocations[referal] += _bonusPointsPerReferal;
@@ -258,6 +264,7 @@ contract BOBMinter is Ownable, IERC721Receiver{
                 _selectWinnersAndDistribute(currentRound , rounds[currentRound].roundPool);
                 currentRoundMints = 0;
                 _CurrentRound +=1;
+                _CurrentRoundPrice = getNextPrice();
         }
     }
 
@@ -279,6 +286,7 @@ contract BOBMinter is Ownable, IERC721Receiver{
     }
 
     function withdrawSales(uint amount , address to ) public  onlyOwner returns(bool){
+        require(accruedSales[address(0)]>=amount);
         return payable(to).send(amount);
     }
 
@@ -310,13 +318,17 @@ contract BOBMinter is Ownable, IERC721Receiver{
     }
 
     function _pushParticipant(uint16 round,uint participant) internal{
-        uint n = getRandomNumber();// Shuffle participants mapping according to random indexes
-        rounds[round].participants[n] = participant;
+        if(_CurrentRoundPrice >0){
+            uint n = getRandomNumber();// Shuffle participants mapping according to random indexes
+            rounds[round].participants[n] = participant;
+        }
     }
 
     function _addRoundPool(uint16 round,uint amount) internal{
-        rounds[round].roundPool += amount;
-        rounds[round].balances += amount;
+        if(_CurrentRoundPrice > 0){
+            rounds[round].roundPool += amount;
+            rounds[round].balances += amount;
+        }
     }
 
     function setWhitelist(address For , bool stat) public  onlyOwner{
