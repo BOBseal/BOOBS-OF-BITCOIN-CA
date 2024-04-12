@@ -58,7 +58,7 @@ contract BOBMinter is Ownable, IERC721Receiver{
 
     uint internal _bonusPointsPerReferal = 69 * 10 ** 18; // each referal gives extra this amount of bonus point to their minted nft
     
-    uint16 internal _CurrentRound = 1; // 1st round is free mint of 1000 , second round is 0.00015 btc , and after that there is a 69% increase in mint price for each round
+    uint16 internal _CurrentRound = 1; // 1st round is free mint of 1000 , second round is 0.00015 btc , and after that there is a 25% increase in mint price for each round
     
     uint8 internal _winnersPerRound = 3; // 3 random winner ids , each winner eligible for equal rewards from a reward pool from 15% of 1000 mints (1 round)  
 
@@ -109,7 +109,7 @@ contract BOBMinter is Ownable, IERC721Receiver{
         if(_CurrentRoundPrice == 0 && _CurrentRound == 1){
             return 0.00015 ether;
         } else if(_CurrentRoundPrice == 0 && _CurrentRound > 1){
-            _CurrentRoundPrice + ((_CurrentRoundPrice * 110) / 100);
+            _CurrentRoundPrice + ((_CurrentRoundPrice * 25) / 100);
         }
     }
 
